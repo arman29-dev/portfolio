@@ -12,7 +12,8 @@ const projects = [
     description: 'Control phones, PCs, and embedded devices from one unified account. Strict permission system, QR-code device linking, cross-platform Flutter app secured with JWT.',
     stack: ['FastAPI', 'MySQL', 'Flutter', 'Dart', 'JWT', 'QR Code'],
     highlights: ['Cross-platform Flutter app', 'JWT secured backend', 'QR device linking'],
-    github: 'https://github.com/arman29-dev',
+    github: 'https://github.com/arman29-dev/N.I.X',
+    demo: '',
     color: '#00f2ff',
   },
   {
@@ -22,7 +23,8 @@ const projects = [
     description: 'A cashless payment system using student ID cards with RFID & barcode scanning via Raspberry Pi and OpenCV. Bills accumulate and are paid at fee submission time.',
     stack: ['Flask', 'SQLite3', 'OpenCV', 'Raspberry Pi', 'GPIO'],
     highlights: ['RFID + barcode scanning', 'Raspberry Pi GPIO', 'Student portal billing'],
-    github: 'https://github.com/arman29-dev',
+    github: 'https://github.com/arman29-dev/CanteenFastCard',
+    demo: '',
     color: '#00f2ff',
   },
   {
@@ -32,7 +34,8 @@ const projects = [
     description: 'A peer-to-peer marketplace for students to list and sell hardware/software projects. Integrated Razorpay & Stripe for secure transactions.',
     stack: ['Django', 'MySQL', 'Razorpay', 'Stripe'],
     highlights: ['Payment gateway integration', 'Django ORM', 'User auth system'],
-    github: 'https://github.com/arman29-dev',
+    github: 'https://github.com/arman29-dev/POBucket.xyz',
+    demo: '',
     color: '#00f2ff',
   },
   {
@@ -42,7 +45,8 @@ const projects = [
     description: 'A browser-based developer tool to visualize and perform CRUD on local .db/.sqlite files. Eliminates CLI friction during development.',
     stack: ['Flask', 'SQLite3', 'HTML/CSS/JS'],
     highlights: ['Full CRUD interface', 'Zero CLI dependency', 'Dev tooling'],
-    github: 'https://github.com/arman29-dev',
+    github: 'https://github.com/arman29-dev/DB-GUI.tool',
+    demo: 'https://db-guitool.up.railway.app',
     color: '#00f2ff',
   },
 ]
@@ -106,10 +110,20 @@ function ProjectCard({ project, index, inView }) {
             </a>
           </Magnet>
           <Magnet strength={0.4}>
-            <span className="flex items-center gap-2 px-4 py-2 font-mono text-xs text-white/20"
-              style={{ border: '1px solid rgba(255,255,255,0.05)', clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
-              Demo N/A
-            </span>
+            {project.demo ? (
+              <a href={project.demo} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 font-mono text-xs text-white/60 transition-colors hover:text-accent"
+                style={{ border: '1px solid rgba(255,255,255,0.1)', clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}
+                data-cursor="DEMO"
+              >
+                Demo
+              </a>
+            ) : (
+              <span className="flex items-center gap-2 px-4 py-2 font-mono text-xs text-white/20"
+                style={{ border: '1px solid rgba(255,255,255,0.05)', clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}>
+                Demo
+              </span>
+            )}
           </Magnet>
         </div>
       </TiltCard>
