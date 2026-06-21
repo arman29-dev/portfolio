@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react'
-import { motion, useInView, AnimatePresence } from 'framer-motion'
+import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import TrueFocus from './reactbits/TrueFocus'
 import Magnet from './reactbits/Magnet'
+import emailjs from '@emailjs/browser'
 
 const socials = [
   { label: 'GitHub', value: 'arman29-dev', href: 'https://github.com/arman29-dev', icon: '⬡' },
@@ -34,27 +35,44 @@ function GlowInput({ label, type='text', name, placeholder, multiline=false }) {
 export default function Contact() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-100px' })
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  const numY = useTransform(scrollYProgress, [0, 1], [60, -60])
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState(false)
 
   const handleSubmit = (e) => {
     e.preventDefault()
     setSubmitting(true)
+    setError(false)
+
     const data = new FormData(e.target)
-    const name = data.get('name') || ''
-    const email = data.get('email') || ''
-    const subject = data.get('subject') || 'Portfolio Contact'
-    const message = data.get('message') || ''
-    const body = `From: ${name} <${email}>\n\n${message}`
-    window.location.href = `mailto:work.armandas@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    setTimeout(() => { setSubmitting(false); setSubmitted(true) }, 800)
+
+    emailjs.send(
+      import.meta.env.VITE_EMAILJS_SERVICE_ID,
+      import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+      {
+        title: data.get('subject') || 'Portfolio Contact',
+        name: data.get('name'),
+        email: data.get('email'),
+        message: data.get('message'),
+      },
+      import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+    ).then(() => {
+      setSubmitting(false)
+      setSubmitted(true)
+    }).catch(() => {
+      setSubmitting(false)
+      setError(true)
+      e.target.reset()
+    })
   }
 
   return (
     <section id="contact" ref={ref} className="relative py-28 px-6 md:px-16 pb-40 overflow-hidden">
-      <div className="absolute left-8 top-12 font-display text-8xl md:text-[160px] font-black text-white/[0.03] select-none pointer-events-none leading-none">05</div>
+      <motion.div style={{ y: numY }} className="absolute left-8 top-12 font-display text-8xl md:text-[160px] font-black text-white/[0.03] select-none pointer-events-none leading-none">05</motion.div>
       <div className="max-w-5xl mx-auto">
-        <motion.div initial={{ opacity: 0, x: -40 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.7 }} className="mb-16">
+        <motion.div initial={{ opacity: 0, x: -80, scale: 0.9 }} animate={inView ? { opacity: 1, x: 0, scale: 1 } : {}} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }} className="mb-16">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-8 h-px bg-accent" />
             <span className="font-mono text-xs text-accent/60 tracking-widest">05 — CONNECT</span>
@@ -75,6 +93,28 @@ export default function Contact() {
                   <h3 className="font-display text-lg text-accent tracking-widest">TRANSMITTED</h3>
                   <p className="font-mono text-xs text-white/30">Response incoming shortly.</p>
                 </motion.div>
+              ) : error ? (
+                <motion.form key="form" onSubmit={handleSubmit} className="glass-card p-6 space-y-5"
+                  style={{ borderTop: '2px solid rgba(255,60,60,0.3)' }}>
+                  <div className="font-mono text-xs text-red-400 text-center">TRANSMISSION FAILED — TRY AGAIN OR USE DIRECT CHANNELS</div>
+                  <GlowInput label="NAME" name="name" placeholder="Your name" />
+                  <GlowInput label="EMAIL" name="email" type="email" placeholder="your@email.com" />
+                  <GlowInput label="SUBJECT" name="subject" placeholder="What's this about?" />
+                  <GlowInput label="MESSAGE" name="message" placeholder="Tell me about your project..." multiline />
+                  <Magnet strength={0.3}>
+                    <button type="submit" disabled={submitting}
+                      className="w-full py-3 font-display text-sm tracking-widest text-dark font-bold transition-all duration-300"
+                      style={{
+                        background: submitting ? 'rgba(0,242,255,0.3)' : 'linear-gradient(135deg, #00f2ff, #0099bb)',
+                        boxShadow: submitting ? 'none' : '0 0 30px rgba(0,242,255,0.35)',
+                        clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%)',
+                      }}
+                      data-cursor="SEND"
+                    >
+                      {submitting ? 'TRANSMITTING...' : 'SEND MESSAGE'}
+                    </button>
+                  </Magnet>
+                </motion.form>
               ) : (
                 <motion.form key="form" onSubmit={handleSubmit} className="glass-card p-6 space-y-5"
                   style={{ borderTop: '2px solid rgba(0,242,255,0.3)' }}>

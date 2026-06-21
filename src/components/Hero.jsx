@@ -1,10 +1,16 @@
 import { useRef, useState, useEffect } from 'react'
 import { motion, useMotionValue, useTransform, useSpring as useMotionSpring } from 'framer-motion'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useThree } from '@react-three/fiber'
 import SplitText from './reactbits/SplitText'
 import DecryptedText from './reactbits/DecryptedText'
 import Magnet from './reactbits/Magnet'
 import LaptopModel from './LaptopModel'
+
+function TransparentBg() {
+  const { gl } = useThree()
+  useEffect(() => { gl.setClearColor(0x000000, 0) }, [gl])
+  return null
+}
 
 export default function Hero() {
   const [mouse, setMouse] = useState({ x: 0, y: 0 })
@@ -69,7 +75,7 @@ export default function Hero() {
             </motion.div>
 
             {/* Name — brutalist oversized */}
-            <div className="overflow-hidden">
+            <div>
               <SplitText
                 text="ARMAN"
                 delay={0.2}
@@ -139,35 +145,32 @@ export default function Hero() {
                   <DownloadIcon /> Resume
                 </a>
               </Magnet>
-
-              <Magnet strength={0.4}>
-                <button
-                  onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' })}
-                  data-cursor="CONTACT"
-                  className="px-7 py-3.5 font-mono text-sm font-bold tracking-widest text-white/50"
-                  style={{
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))',
-                  }}
-                >
-                  Contact
-                </button>
-              </Magnet>
             </div>
 
             {/* Stats row — brutalist */}
-            <div className="grid grid-cols-3 gap-px pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              className="grid grid-cols-3 gap-px pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
+            >
               {[
                 { n: '4+', l: 'Projects' },
                 { n: '3mo', l: 'Internship' },
                 { n: '3', l: 'Certs' },
-              ].map((s) => (
-                <div key={s.l} className="text-center py-4" style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+              ].map((s, i) => (
+                <motion.div
+                  key={s.l}
+                  variants={{
+                    hidden: { opacity: 0, y: 20 },
+                    visible: { opacity: 1, y: 0, transition: { delay: i * 0.15, duration: 0.5 } }
+                  }}
+                  className="text-center py-4" style={{ borderRight: '1px solid rgba(255,255,255,0.06)' }}
+                >
                   <div className="font-display text-2xl font-black text-accent" style={{ textShadow: '0 0 20px rgba(0,242,255,0.5)' }}>{s.n}</div>
                   <div className="font-mono text-xs text-white/30 tracking-widest mt-1">{s.l}</div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
 
           {/* RIGHT — 3D Laptop + Profile */}
@@ -211,13 +214,15 @@ export default function Hero() {
             </motion.div>
 
             {/* 3D Canvas */}
-            <div className="absolute inset-0 z-10">
+            <div className="absolute inset-0 z-10" style={{ background: 'transparent' }}>
               {canvasReady && (
                 <Canvas
                   camera={{ position: [0, 0.8, 5.5], fov: 42 }}
-                  gl={{ antialias: true, powerPreference: 'high-performance' }}
+                  gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
                   dpr={[1, 1.5]}
+                  onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
                 >
+                  <TransparentBg />
                   <ambientLight intensity={0.6} />
                   <directionalLight position={[5, 5, 5]} intensity={1.4} color="#ffffff" />
                   <pointLight position={[-3, 2, 2]} color="#00f2ff" intensity={2} distance={8} />
@@ -225,8 +230,6 @@ export default function Hero() {
                   <LaptopModel mouseX={mouse.x} mouseY={mouse.y} />
                 </Canvas>
               )}
-              {/* Canvas edge fade */}
-              <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.8) 100%)' }} />
             </div>
 
             {/* Floating code snippet */}
@@ -242,16 +245,6 @@ export default function Hero() {
             </motion.div>
           </div>
         </div>
-      </div>
-
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="w-px h-12 bg-gradient-to-b from-accent/50 to-transparent"
-        />
-        <span className="font-mono text-xs text-white/20 tracking-widest">SCROLL</span>
       </div>
     </section>
   )

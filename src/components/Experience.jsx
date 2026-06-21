@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView, useScroll, useTransform } from 'framer-motion'
 import TrueFocus from './reactbits/TrueFocus'
 import TiltCard from './reactbits/TiltCard'
 
@@ -33,12 +33,14 @@ const typeConfig = {
 export default function Experience() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-100px' })
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  const numY = useTransform(scrollYProgress, [0, 1], [60, -60])
 
   return (
     <section id="experience" ref={ref} className="relative py-28 px-6 md:px-16 overflow-hidden">
-      <div className="absolute right-8 top-12 font-display text-8xl md:text-[160px] font-black text-white/[0.03] select-none pointer-events-none leading-none">04</div>
+      <motion.div style={{ y: numY }} className="absolute right-8 top-12 font-display text-8xl md:text-[160px] font-black text-white/[0.03] select-none pointer-events-none leading-none">04</motion.div>
       <div className="max-w-4xl mx-auto">
-        <motion.div initial={{ opacity: 0, x: -40 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.7 }} className="mb-16">
+        <motion.div initial={{ opacity: 0, x: -80, scale: 0.9 }} animate={inView ? { opacity: 1, x: 0, scale: 1 } : {}} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }} className="mb-16">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-8 h-px bg-accent" />
             <span className="font-mono text-xs text-accent/60 tracking-widest">04 — JOURNEY</span>
@@ -60,8 +62,8 @@ export default function Experience() {
           {experiences.map((item, i) => {
             const cfg = typeConfig[item.type]
             return (
-              <motion.div key={i} initial={{ opacity: 0, x: -40 }} animate={inView ? { opacity: 1, x: 0 } : {}}
-                transition={{ duration: 0.6, delay: i * 0.1 }}
+              <motion.div key={i} initial={{ opacity: 0, x: -60, rotateY: 15, scale: 0.95 }} animate={inView ? { opacity: 1, x: 0, rotateY: 0, scale: 1 } : {}}
+                transition={{ duration: 0.7, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
                 className="flex gap-6 pb-6 group"
               >
                 <div className="flex flex-col items-center">

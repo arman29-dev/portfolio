@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView, useScroll, useTransform } from 'framer-motion'
 import TrueFocus from './reactbits/TrueFocus'
 import DecryptedText from './reactbits/DecryptedText'
 
@@ -12,12 +12,14 @@ const skillCategories = [
   { category: 'AI / ML', icon: '◈', skills: [{ name: 'GenAI Integration', level: 70 },{ name: 'Computer Vision', level: 65 },{ name: 'Data Analytics', level: 60 }] },
 ]
 
+const cardDir = (i) => i % 2 === 0 ? { x: -60 } : { x: 60 }
+
 function SkillCard({ data, index, inView }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay: index * 0.08 }}
+      initial={{ opacity: 0, x: cardDir(index).x, y: 50, scale: 0.85 }}
+      animate={inView ? { opacity: 1, x: 0, y: 0, scale: 1 } : {}}
+      transition={{ duration: 0.7, delay: index * 0.12, ease: [0.16, 1, 0.3, 1] }}
       className="glass-card p-5 space-y-4 group transition-all duration-500 hover:border-accent/25"
       style={{ borderTop: '1px solid rgba(0,242,255,0.15)' }}
     >
@@ -53,12 +55,14 @@ function SkillCard({ data, index, inView }) {
 export default function Skills() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-100px' })
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  const numY = useTransform(scrollYProgress, [0, 1], [60, -60])
 
   return (
     <section id="skills" ref={ref} className="relative py-28 px-6 md:px-16 overflow-hidden">
-      <div className="absolute left-8 top-12 font-display text-8xl md:text-[160px] font-black text-white/[0.03] select-none pointer-events-none leading-none">02</div>
+      <motion.div style={{ y: numY }} className="absolute left-8 top-12 font-display text-8xl md:text-[160px] font-black text-white/[0.03] select-none pointer-events-none leading-none">02</motion.div>
       <div className="max-w-7xl mx-auto">
-        <motion.div initial={{ opacity: 0, x: -40 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.7 }} className="mb-16">
+        <motion.div initial={{ opacity: 0, x: -80, scale: 0.9 }} animate={inView ? { opacity: 1, x: 0, scale: 1 } : {}} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }} className="mb-16">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-8 h-px bg-accent" />
             <span className="font-mono text-xs text-accent/60 tracking-widest">02 — ARSENAL</span>

@@ -1,23 +1,31 @@
-import { useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
-import { Canvas } from '@react-three/fiber'
+import { useRef, useEffect } from 'react'
+import { motion, useInView, useScroll, useTransform } from 'framer-motion'
+import { Canvas, useThree } from '@react-three/fiber'
 import TrueFocus from './reactbits/TrueFocus'
 import GlobeModel from './GlobeModel'
+
+function TransparentBg() {
+  const { gl } = useThree()
+  useEffect(() => { gl.setClearColor(0x000000, 0) }, [gl])
+  return null
+}
 
 export default function About() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-100px' })
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  const numY = useTransform(scrollYProgress, [0, 1], [60, -60])
 
   return (
     <section id="about" ref={ref} className="relative py-28 px-6 md:px-16 overflow-hidden">
       {/* Brutal section number */}
-      <div className="absolute right-8 top-12 font-display text-8xl md:text-[160px] font-black text-white/[0.03] select-none pointer-events-none leading-none">01</div>
+      <motion.div style={{ y: numY }} className="absolute right-8 top-12 font-display text-8xl md:text-[160px] font-black text-white/[0.03] select-none pointer-events-none leading-none">01</motion.div>
 
       <div className="max-w-7xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, x: -40 }}
-          animate={inView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.7 }}
+          initial={{ opacity: 0, x: -80, scale: 0.9 }}
+          animate={inView ? { opacity: 1, x: 0, scale: 1 } : {}}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="mb-16"
         >
           <div className="flex items-center gap-4 mb-4">
@@ -38,11 +46,11 @@ export default function About() {
             className="lg:col-span-2 relative"
             style={{ height: '380px' }}
           >
-            <Canvas camera={{ position: [0, 0, 5], fov: 50 }} dpr={[1, 1.5]} gl={{ antialias: true }}>
+            <Canvas camera={{ position: [0, 0, 5], fov: 50 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: true }} onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}>
+              <TransparentBg />
               <ambientLight intensity={0.2} />
               <GlobeModel />
             </Canvas>
-            <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.9) 100%)' }} />
             {/* Brutal label */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 font-mono text-xs text-accent/40 tracking-widest whitespace-nowrap">
               [ NEURAL.NETWORK.ACTIVE ]
@@ -51,9 +59,9 @@ export default function About() {
 
           {/* Text */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.7, delay: 0.3 }}
+            initial={{ opacity: 0, y: 60, rotateX: 10 }}
+            animate={inView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-3 space-y-6"
           >
             <p className="text-white/60 font-body leading-relaxed text-base">
@@ -106,11 +114,17 @@ export default function About() {
                 'Interned @ Fusion Hive',
                 'Exploring Go + AI tooling',
                 'Open to internships & collabs',
-              ].map((item) => (
-                <div key={item} className="flex items-start gap-2 font-mono text-xs text-white/40">
+              ].map((item, i) => (
+                <motion.div
+                  key={item}
+                  initial={{ opacity: 0, x: -30 }}
+                  animate={inView ? { opacity: 1, x: 0 } : {}}
+                  transition={{ duration: 0.5, delay: 0.4 + i * 0.12 }}
+                  className="flex items-start gap-2 font-mono text-xs text-white/40"
+                >
                   <span className="text-accent mt-0.5 shrink-0">›</span>
                   {item}
-                </div>
+                </motion.div>
               ))}
             </div>
           </motion.div>

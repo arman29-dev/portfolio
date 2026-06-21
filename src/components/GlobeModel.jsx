@@ -10,8 +10,8 @@ function OrbitRing({ radius, tilt, speed, color, dotCount = 6 }) {
   })
   return (
     <group ref={groupRef} rotation={[tilt, 0, 0]}>
-      <Torus args={[radius, 0.008, 6, 80]}>
-        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.4} transparent opacity={0.5} />
+      <Torus args={[radius, 0.015, 6, 80]}>
+        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.8} transparent opacity={0.7} />
       </Torus>
       {Array.from({ length: dotCount }).map((_, i) => {
         const angle = (i / dotCount) * Math.PI * 2
@@ -50,11 +50,11 @@ export default function GlobeModel() {
     <group scale={1.1}>
       <group ref={globeRef}>
         <Sphere args={[1, 48, 32]}>
-          <meshStandardMaterial color="#020d16" emissive="#001824" emissiveIntensity={0.5} metalness={0.2} roughness={0.8} />
+          <meshStandardMaterial color="#061a2e" emissive="#00f2ff" emissiveIntensity={0.15} metalness={0.3} roughness={0.6} />
         </Sphere>
         {/* Wireframe — no independent rotation; inherits from globeRef */}
         <lineSegments geometry={edgesGeo}>
-          <lineBasicMaterial color="#00f2ff" transparent opacity={0.12} />
+          <lineBasicMaterial color="#00f2ff" transparent opacity={0.35} />
         </lineSegments>
         <mesh position={[0, 1.01, 0]}>
           <sphereGeometry args={[0.04, 8, 8]} />
@@ -70,8 +70,8 @@ export default function GlobeModel() {
       <OrbitRing radius={1.9} tilt={-0.6} speed={-0.005} color="#00aacc" dotCount={6} />
       <OrbitRing radius={2.3} tilt={1.1} speed={0.003} color="#007799" dotCount={3} />
 
-      <pointLight position={[2, 2, 2]} color="#00f2ff" intensity={1.5} distance={6} />
-      <pointLight position={[-2, -1, -2]} color="#003344" intensity={0.8} distance={5} />
+      <pointLight position={[1.5, 1.5, 1.5]} color="#00f2ff" intensity={3} distance={8} />
+      <pointLight position={[-1.5, -0.5, -1.5]} color="#0077aa" intensity={1.5} distance={6} />
     </group>
   )
 }

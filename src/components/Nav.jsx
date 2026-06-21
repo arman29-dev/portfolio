@@ -53,17 +53,6 @@ export default function Nav() {
         <div className="hidden md:flex items-center gap-3">
           <Magnet strength={0.5}>
             <a
-              href="/portfolio/Arman_Das_Resume.pdf"
-              download="Arman_Das_Resume.pdf"
-              data-cursor="DOWNLOAD"
-              className="flex items-center gap-2 px-4 py-2 font-mono text-xs tracking-widest text-accent"
-              style={{ border: '1px solid rgba(0,242,255,0.3)', boxShadow: '0 0 15px rgba(0,242,255,0.1)', clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}
-            >
-              ↓ Resume
-            </a>
-          </Magnet>
-          <Magnet strength={0.5}>
-            <a
               href="mailto:work.armandas@gmail.com"
               className="flex items-center gap-2 px-4 py-2 font-mono text-xs tracking-widest text-dark font-bold"
               style={{ background: 'linear-gradient(135deg, #00f2ff, #0099bb)', clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)' }}

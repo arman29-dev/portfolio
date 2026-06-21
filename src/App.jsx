@@ -1,4 +1,4 @@
-import { motion, useScroll, useSpring } from 'framer-motion'
+import { motion, useScroll, useSpring, useTransform } from 'framer-motion'
 import Background from './components/Background'
 import CrosshairCursor from './components/reactbits/CrosshairCursor'
 import Nav from './components/Nav'
@@ -10,9 +10,22 @@ import Experience from './components/Experience'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
 
+function SectionDivider() {
+  return (
+    <motion.div
+      initial={{ scaleX: 0 }}
+      whileInView={{ scaleX: 1 }}
+      viewport={{ once: true, margin: '-200px' }}
+      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      className="section-divider origin-center"
+    />
+  )
+}
+
 export default function App() {
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 })
+  const mainY = useTransform(scrollYProgress, [0, 1], [0, -80])
 
   return (
     <div className="relative min-h-screen">
@@ -29,7 +42,7 @@ export default function App() {
         }}
       />
 
-      {/* Scroll-reactive 3D Background */}
+      {/* Scroll-reactive 3D wave grid */}
       <Background scrollProgress={scrollYProgress} />
 
       {/* Crosshair Cursor — desktop only */}
@@ -39,21 +52,20 @@ export default function App() {
 
       <Nav />
 
-      <main className="relative z-10">
+      <motion.main className="relative z-10" style={{ y: mainY, perspective: '1200px' }}>
         <Hero />
-        {/* Section dividers */}
-        <div className="section-divider" />
+        <SectionDivider />
         <About />
-        <div className="section-divider" />
+        <SectionDivider />
         <Skills />
-        <div className="section-divider" />
+        <SectionDivider />
         <Projects />
-        <div className="section-divider" />
+        <SectionDivider />
         <Experience />
-        <div className="section-divider" />
+        <SectionDivider />
         <Contact />
         <Footer />
-      </main>
+      </motion.main>
     </div>
   )
 }

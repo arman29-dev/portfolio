@@ -1,112 +1,210 @@
-import { useRef, useMemo } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { useRef, useMemo, useEffect } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { PerspectiveCamera } from '@react-three/drei'
 import * as THREE from 'three'
 
-function Corridor({ scrollProgress }) {
-  const groupRef = useRef()
-  const objectsRef = useRef()
+const PARTICLE_COUNT = 4000
+const MAX_EDGES = 4000
 
-  const gridPositions = useMemo(() => {
-    const W = 14, D = 80, S = 1.5
-    const pts = []
-    for (let x = -W / 2; x <= W / 2; x += S) {
-      pts.push(x, -0.8, -D, x, -0.8, -2)
+function makePath() {
+  const pts = [
+    [0, 0, 0],
+    [2, -1, 3],
+    [0, -3, 7],
+    [-3, -2, 11],
+    [-2, 1, 15],
+    [2, 3, 19],
+    [4, 1, 23],
+    [3, -2, 27],
+    [-1, -3, 31],
+    [-3, 0, 35],
+    [0, 2, 39],
+    [2, -1, 43],
+    [0, 0, 48],
+  ].map(p => new THREE.Vector3(p[0], p[1], p[2]))
+  return new THREE.CatmullRomCurve3(pts)
+}
+
+function genParticleField(path) {
+  const positions = new Float32Array(PARTICLE_COUNT * 3)
+  const colors = new Float32Array(PARTICLE_COUNT * 3)
+  const scatterR = 3.5
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const t = Math.random()
+    const pos = path.getPointAt(t)
+    const tan = path.getTangentAt(t)
+    const up = Math.abs(tan.y) > 0.95
+      ? new THREE.Vector3(1, 0, 0)
+      : new THREE.Vector3(0, 1, 0)
+    const right = new THREE.Vector3().crossVectors(tan, up).normalize()
+    const localUp = new THREE.Vector3().crossVectors(right, tan).normalize()
+    const angle = Math.random() * Math.PI * 2
+    const radius = 0.4 + Math.random() * scatterR
+
+    positions[i * 3] = pos.x + (Math.cos(angle) * radius * right.x + Math.sin(angle) * radius * localUp.x)
+    positions[i * 3 + 1] = pos.y + (Math.cos(angle) * radius * right.y + Math.sin(angle) * radius * localUp.y)
+    positions[i * 3 + 2] = pos.z + (Math.cos(angle) * radius * right.z + Math.sin(angle) * radius * localUp.z)
+
+    const b = 0.4 + Math.random() * 0.6
+    colors[i * 3] = 0
+    colors[i * 3 + 1] = 0.55 * b
+    colors[i * 3 + 2] = b
+  }
+  return positions
+}
+
+function computeEdges(pos) {
+  const pairs = []
+  const thresh2 = 0.55 * 0.55
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    if (pairs.length >= MAX_EDGES) break
+    const pi = i * 3
+    for (let j = i + 1; j < PARTICLE_COUNT; j++) {
+      if (pairs.length >= MAX_EDGES) break
+      const pj = j * 3
+      const dx = pos[pi] - pos[pj]
+      const dy = pos[pi + 1] - pos[pj + 1]
+      const dz = pos[pi + 2] - pos[pj + 2]
+      if (dx * dx + dy * dy + dz * dz < thresh2) pairs.push(i, j)
     }
-    for (let z = -D; z <= -2; z += S) {
-      pts.push(-W / 2, -0.8, z, W / 2, -0.8, z)
+  }
+  return new Uint16Array(pairs)
+}
+
+function makeGlowTex() {
+  const c = document.createElement('canvas')
+  c.width = 64; c.height = 64
+  const ctx = c.getContext('2d')
+  const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32)
+  g.addColorStop(0, 'rgba(255,255,255,1)')
+  g.addColorStop(0.1, 'rgba(255,255,255,0.75)')
+  g.addColorStop(0.3, 'rgba(255,255,255,0.08)')
+  g.addColorStop(1, 'rgba(255,255,255,0)')
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 64, 64)
+  const tex = new THREE.CanvasTexture(c)
+  tex.needsUpdate = true; return tex
+}
+
+function genColors() {
+  const a = new Float32Array(PARTICLE_COUNT * 3)
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const b = 0.4 + Math.random() * 0.6
+    a[i * 3] = 0
+    a[i * 3 + 1] = 0.55 * b
+    a[i * 3 + 2] = b
+  }
+  return a
+}
+
+function FlythroughScene({ progress }) {
+  const rig = useRef()
+  const pts = useRef()
+  const linesRef = useRef()
+  const { scene } = useThree()
+
+  const path = useMemo(makePath, [])
+  const glowTex = useMemo(makeGlowTex, [])
+  const positions = useMemo(() => genParticleField(path), [path])
+  const colors = useMemo(genColors, [])
+
+  const tubeGeo = useMemo(() => {
+    const g = new THREE.TubeGeometry(path, 200, 2.8, 20, false)
+    return new THREE.EdgesGeometry(g)
+  }, [path])
+
+  // Compute edges and line buffer together so sizes match
+  const lineData = useMemo(() => {
+    const edges = computeEdges(positions)
+    const eCount = edges.length / 2
+    const buf = new Float32Array(eCount * 6)
+    for (let ei = 0; ei < eCount; ei++) {
+      const i = edges[ei * 2] * 3; const j = edges[ei * 2 + 1] * 3
+      const ei6 = ei * 6
+      buf[ei6] = positions[i]; buf[ei6 + 1] = positions[i + 1]; buf[ei6 + 2] = positions[i + 2]
+      buf[ei6 + 3] = positions[j]; buf[ei6 + 4] = positions[j + 1]; buf[ei6 + 5] = positions[j + 2]
     }
-    return new Float32Array(pts)
-  }, [])
+    return { edges, eCount, buf }
+  }, [positions])
+  const curPos = useRef(new Float32Array(positions))
 
-  const geos = useMemo(() => [
-    new THREE.OctahedronGeometry(0.3),
-    new THREE.IcosahedronGeometry(0.25),
-    new THREE.TorusKnotGeometry(0.2, 0.08, 16, 8),
-    new THREE.DodecahedronGeometry(0.22),
-    new THREE.TetrahedronGeometry(0.28),
-  ], [])
+  useEffect(() => {
+    scene.fog = new THREE.Fog('#000000', 6, 30)
+    return () => { scene.fog = null }
+  }, [scene])
 
-  const objectData = useMemo(() => {
-    const items = []
-    for (let i = 0; i < 24; i++) {
-      items.push({
-        pos: [
-          (Math.random() - 0.5) * 10,
-          Math.random() * 3 + 0.2,
-          -(Math.random() * 70 + 4),
-        ],
-        geoIdx: i % geos.length,
-        speed: 0.3 + Math.random() * 1.2,
-        opacity: 0.06 + Math.random() * 0.18,
-      })
-    }
-    return items
-  }, [geos])
+  const smooth = useRef(0)
 
-  useFrame((state) => {
-    const p = typeof scrollProgress === 'object'
-      ? scrollProgress.get()
-      : scrollProgress
+  useFrame((state, dt) => {
+    if (!rig.current || !pts.current || !linesRef.current) return
 
-    if (!groupRef.current) return
-    groupRef.current.position.z = p * -18
-    groupRef.current.rotation.x = p * 0.04
-    groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.04) * 0.015
+    const target = progress.get() * 0.92
+    smooth.current += (target - smooth.current) * Math.min(1, dt * 4)
+    const p = smooth.current
 
-    if (objectsRef.current) {
-      objectsRef.current.children.forEach((child, i) => {
-        if (i < objectData.length) {
-          child.rotation.x += 0.008 * objectData[i].speed
-          child.rotation.y += 0.015 * objectData[i].speed
-          child.position.y += Math.sin(
-            state.clock.elapsedTime * objectData[i].speed + i
-          ) * 0.001
-        }
-      })
-    }
+    const pos = path.getPointAt(p)
+    const look = path.getPointAt(Math.min(0.99, p + 0.015))
+    rig.current.position.copy(pos)
+    rig.current.lookAt(look)
+
+    const r = Math.min(1, p * 7)
+    const mat = pts.current.material
+    mat.size = 0.06 * r
+    mat.opacity = 0.9 * r
+    linesRef.current.material.opacity = 0.4 * r
+
+    // Copy computed positions into the GPU buffer (already has correct data)
+    const g = pts.current.geometry
+    g.attributes.position.needsUpdate = true
   })
 
   return (
-    <group ref={groupRef}>
-      <lineSegments>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            count={gridPositions.length / 3}
-            array={gridPositions}
-            itemSize={3}
-          />
-        </bufferGeometry>
-        <lineBasicMaterial color="#00f2ff" transparent opacity={0.06} />
+    <>
+      <group ref={rig}>
+        <PerspectiveCamera makeDefault position={[0, 0, 0]} fov={65} near={0.1} far={60} />
+      </group>
+
+      <lineSegments geometry={tubeGeo}>
+        <lineBasicMaterial color="#00f2ff" transparent opacity={0.08} depthWrite={false} toneMapped={false} />
       </lineSegments>
 
-      <group ref={objectsRef}>
-        {objectData.map((obj, i) => (
-          <mesh key={i} position={obj.pos}>
-            <primitive object={geos[obj.geoIdx]} dispose={null} />
-            <meshBasicMaterial
-              color="#00f2ff"
-              wireframe
-              transparent
-              opacity={obj.opacity}
-            />
-          </mesh>
-        ))}
-      </group>
-    </group>
+      <points ref={pts}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" count={PARTICLE_COUNT} array={curPos.current} itemSize={3} />
+          <bufferAttribute attach="attributes-color" count={PARTICLE_COUNT} array={colors} itemSize={3} />
+        </bufferGeometry>
+        <pointsMaterial
+          map={glowTex}
+          size={0.06}
+          sizeAttenuation
+          vertexColors
+          transparent
+          opacity={0}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </points>
+
+      <lineSegments ref={linesRef}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" count={lineData.eCount * 2} array={lineData.buf} itemSize={3} />
+        </bufferGeometry>
+        <lineBasicMaterial color="#00f2ff" transparent opacity={0} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+      </lineSegments>
+    </>
   )
 }
 
-export default function Background({ scrollProgress = 0 }) {
+export default function Background({ scrollProgress }) {
   return (
-    <div className="fixed inset-0 -z-10">
+    <div className="fixed inset-0 -z-10" style={{ background: '#000000' }}>
       <Canvas
-        camera={{ position: [0, 1, 2], fov: 70, near: 0.1, far: 90 }}
+        gl={{ antialias: false, alpha: false }}
         dpr={[1, 1.5]}
-        gl={{ antialias: false, alpha: true }}
+        onCreated={({ gl }) => gl.setClearColor(0x000000, 1)}
       >
-        <fogExp2 attach="fog" args={['#000000', 0.016]} />
-        <Corridor scrollProgress={scrollProgress} />
+        <FlythroughScene progress={scrollProgress} />
       </Canvas>
     </div>
   )
