@@ -29,8 +29,8 @@ export default function App() {
         }}
       />
 
-      {/* Particle Background */}
-      <Background />
+      {/* Scroll-reactive 3D Background */}
+      <Background scrollProgress={scrollYProgress} />
 
       {/* Crosshair Cursor — desktop only */}
       <div className="hidden md:block">
