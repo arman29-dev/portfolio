@@ -1,9 +1,9 @@
 import { useRef, useState, useEffect } from 'react'
 import { motion, useMotionValue, useTransform, useSpring as useMotionSpring } from 'framer-motion'
 import { Canvas, useThree } from '@react-three/fiber'
-import SplitText from './reactbits/SplitText'
 import DecryptedText from './reactbits/DecryptedText'
 import Magnet from './reactbits/Magnet'
+import MagnetLines from './reactbits/MagnetLines'
 import LaptopModel from './LaptopModel'
 
 function TransparentBg() {
@@ -46,6 +46,11 @@ export default function Hero() {
         backgroundSize: '60px 60px',
       }} />
 
+      {/* MagnetLines decoration */}
+      <div className="absolute inset-0 pointer-events-none opacity-15">
+        <MagnetLines rows={16} columns={20} lineColor="#00f2ff" lineWidth="1.5px" lineHeight="28px" containerSize="100%" baseAngle={-10} />
+      </div>
+
       {/* Brutal top bar */}
       <div className="absolute top-0 left-0 right-0 h-px bg-accent/30" />
       <div className="absolute top-16 left-0 right-0 h-px bg-accent/10" />
@@ -57,11 +62,55 @@ export default function Hero() {
         <div className="w-px h-20 bg-gradient-to-b from-accent/40 to-transparent" />
       </div>
 
-      <div className="max-w-7xl mx-auto w-full px-6 md:px-16 lg:px-24 pt-28 pb-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center min-h-[80vh]">
+      <div className="max-w-7xl mx-auto w-full px-6 md:px-16 lg:px-24 pt-16 pb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[80vh]">
 
           {/* LEFT — Text */}
-          <div className="space-y-6 order-2 lg:order-1">
+          <div className="space-y-6 order-2 lg:order-1 self-start">
+            {(() => {
+              const armanLines = [
+                ' █████╗ ██████╗ ███╗   ███╗ █████╗ ███╗   ██╗',
+                '██╔══██╗██╔══██╗████╗ ████║██╔══██╗████╗  ██║',
+                '███████║██████╔╝██╔████╔██║███████║██╔██╗ ██║',
+                '██╔══██║██╔══██╗██║╚██╔╝██║██╔══██║██║╚██╗██║',
+                '██║  ██║██║  ██║██║ ╚═╝ ██║██║  ██║██║ ╚████║',
+                '╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝',
+              ];
+              const dasLines = [
+                '██████╗  █████╗ ███████╗',
+                '██╔══██╗██╔══██╗██╔════╝',
+                '██║  ██║███████║███████╗',
+                '██║  ██║██╔══██║╚════██║',
+                '██████╔╝██║  ██║███████║',
+                '╚═════╝ ╚═╝  ╚═╝╚══════╝',
+              ];
+              const allLines = [...armanLines, ...dasLines];
+              return (
+                <motion.div
+                  initial="hidden"
+                  animate="visible"
+                  className="font-mono whitespace-pre leading-[1.15]"
+                  style={{
+                    fontSize: 'clamp(0.45rem, 1.4vw, 1.3rem)',
+                    color: '#00f2ff',
+                    textShadow: '0 0 8px rgba(0,242,255,0.15)',
+                  }}
+                >
+                  {allLines.map((line, i) => (
+                    <motion.div
+                      key={i}
+                      custom={i}
+                      variants={{
+                        hidden: { opacity: 0, y: 30, filter: 'blur(3px)' },
+                        visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.5, delay: 0.15 + i * 0.08, ease: [0.16, 1, 0.3, 1] } },
+                      }}
+                    >
+                      {line}
+                    </motion.div>
+                  ))}
+                </motion.div>
+              );
+            })()}
             {/* Status pill */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
@@ -73,26 +122,6 @@ export default function Hero() {
               <span className="w-1.5 h-1.5 rounded-full bg-green-400" style={{ boxShadow: '0 0 6px #4ade80', animation: 'pulse 2s infinite' }} />
               AVAILABLE FOR HIRE
             </motion.div>
-
-            {/* Name — brutalist oversized */}
-            <div>
-              <SplitText
-                text="ARMAN"
-                delay={0.2}
-                stagger={0.06}
-                tag="h1"
-                className="font-display block leading-none"
-                style={{ fontSize: 'clamp(4rem, 11.2vw, 8rem)', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em' }}
-              />
-              <SplitText
-                text="DAS"
-                delay={0.5}
-                stagger={0.08}
-                tag="h1"
-                className="font-display block leading-none glow-text"
-                style={{ fontSize: 'clamp(4rem, 11.2vw, 8rem)', fontWeight: 900, color: '#00f2ff', letterSpacing: '-0.02em', WebkitTextStroke: '1px rgba(0,242,255,0.4)' }}
-              />
-            </div>
 
             {/* Brutal divider */}
             <div className="flex items-center gap-4">
@@ -174,11 +203,11 @@ export default function Hero() {
           </div>
 
           {/* RIGHT — 3D Laptop + Profile */}
-          <div className="relative order-1 lg:order-2 flex items-center justify-center" style={{ height: '520px' }}>
+          <div className="relative order-1 lg:order-2 flex items-center justify-center self-start" style={{ height: '520px' }}>
             {/* Profile photo with parallax */}
             <motion.div
               className="absolute right-0 md:right-[-2rem] z-20"
-              style={{ x: parallaxX, y: parallaxY, bottom: '63%', right: '-3rem' }}
+              style={{ x: parallaxX, y: parallaxY, top: 'calc(28% - 6.5rem)', right: '-5rem' }}
             >
               {/* Float animation on inner wrapper so it doesn't conflict with parallax y */}
               <motion.div
@@ -217,7 +246,7 @@ export default function Hero() {
             <div className="absolute inset-0 z-10" style={{ background: 'transparent' }}>
               {canvasReady && (
                 <Canvas
-                  camera={{ position: [0, 0.8, 5.5], fov: 42 }}
+                  camera={{ position: [0, 0.3, 5.5], fov: 42 }}
                   gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
                   dpr={[1, 1.5]}
                   onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
@@ -233,16 +262,18 @@ export default function Hero() {
             </div>
 
             {/* Floating code snippet */}
-            <motion.div
-              className="absolute top-12 left-2 z-20 font-mono text-xs glass-card px-3 py-2 hidden md:block"
-              animate={{ y: [0, 6, 0] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-              style={{ maxWidth: '180px', borderLeft: '2px solid #00f2ff' }}
-            >
-              <div className="text-accent/40 text-xs">// current stack</div>
-              <div className="text-accent/80 text-xs mt-1">FastAPI + Flutter</div>
-              <div className="text-white/40 text-xs">+ JWT + MySQL</div>
-            </motion.div>
+            <div className="absolute right-8 z-20 hidden md:block" style={{ bottom: '2rem' }}>
+              <motion.div
+                className="font-mono text-xs glass-card px-3 py-2"
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+                style={{ maxWidth: '180px', borderLeft: '2px solid #00f2ff' }}
+              >
+                <div className="text-accent/40 text-xs">// current stack</div>
+                <div className="text-accent/80 text-xs mt-1">FastAPI + Flutter</div>
+                <div className="text-white/40 text-xs">+ JWT + MySQL</div>
+              </motion.div>
+            </div>
           </div>
         </div>
       </div>

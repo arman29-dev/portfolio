@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { motion, useInView, useScroll, useTransform } from 'framer-motion'
-import TrueFocus from './reactbits/TrueFocus'
+import GradualBlur from './reactbits/GradualBlur'
 import TiltCard from './reactbits/TiltCard'
 
 const experiences = [
@@ -39,15 +39,14 @@ export default function Experience() {
   return (
     <section id="experience" ref={ref} className="relative py-28 px-6 md:px-16 overflow-hidden">
       <motion.div style={{ y: numY }} className="absolute right-8 top-12 font-display text-8xl md:text-[160px] font-black text-white/[0.03] select-none pointer-events-none leading-none">04</motion.div>
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto relative">
+        <GradualBlur position="top" height="100%" animated reveal opacity={1} strength={1.5} divCount={6} curve="ease-out" duration="0.9s" />
         <motion.div initial={{ opacity: 0, x: -80, scale: 0.9 }} animate={inView ? { opacity: 1, x: 0, scale: 1 } : {}} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }} className="mb-16">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-8 h-px bg-accent" />
             <span className="font-mono text-xs text-accent/60 tracking-widest">04 — JOURNEY</span>
           </div>
-          <h2 className="section-title text-4xl md:text-5xl">
-            <TrueFocus text="Experience" className="text-white" />
-          </h2>
+          <h2 className="section-title text-4xl md:text-5xl">Experience</h2>
         </motion.div>
 
         <div className="flex flex-wrap gap-5 mb-10">

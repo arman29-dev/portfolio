@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion'
-import TrueFocus from './reactbits/TrueFocus'
+import GradualBlur from './reactbits/GradualBlur'
 import Magnet from './reactbits/Magnet'
 import emailjs from '@emailjs/browser'
 
@@ -71,15 +71,14 @@ export default function Contact() {
   return (
     <section id="contact" ref={ref} className="relative py-28 px-6 md:px-16 pb-40 overflow-hidden">
       <motion.div style={{ y: numY }} className="absolute left-8 top-12 font-display text-8xl md:text-[160px] font-black text-white/[0.03] select-none pointer-events-none leading-none">05</motion.div>
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-5xl mx-auto relative">
+        <GradualBlur position="top" height="100%" animated reveal opacity={1} strength={1.5} divCount={6} curve="ease-out" duration="0.9s" />
         <motion.div initial={{ opacity: 0, x: -80, scale: 0.9 }} animate={inView ? { opacity: 1, x: 0, scale: 1 } : {}} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }} className="mb-16">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-8 h-px bg-accent" />
             <span className="font-mono text-xs text-accent/60 tracking-widest">05 — CONNECT</span>
           </div>
-          <h2 className="section-title text-4xl md:text-5xl">
-            <TrueFocus text="Get In Touch" className="text-white" />
-          </h2>
+          <h2 className="section-title text-4xl md:text-5xl">Get In Touch</h2>
           <p className="text-white/35 font-mono text-sm mt-4 max-w-lg">Open to internships, collaborations, and full-time roles. Backend systems, IoT, AI integrations — let's build something real.</p>
         </motion.div>
 

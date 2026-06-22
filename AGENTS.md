@@ -24,7 +24,7 @@ No test, lint, or typecheck scripts.
 - **Data is inline** — portfolio content (projects, skills, experience, socials) lives in each component file under `src/components/`. No CMS, no API, no database.
 - **Accent color `#00f2ff`** — defined in `tailwind.config.js` as `accent`. Also used inline as `rgba(0,242,255,…)`.
 - **Button style** — all CTA buttons use `clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))'`
-- **Custom UI primitives** in `src/components/reactbits/`: `TiltCard`, `Magnet`, `TrueFocus`, `SplitText`, `DecryptedText`, `CrosshairCursor`, `PixelCard`
+- **Custom UI primitives** in `src/components/reactbits/`: `TiltCard`, `Magnet`, `TrueFocus`, `SplitText`, `DecryptedText`, `CrosshairCursor`, `PixelCard`, `GradualBlur`, `MagnetLines`, `ElectricBorder`
 - **Fonts** (Google Fonts): Orbitron (display), JetBrains Mono (mono/UI), Syne (body)
 - **Resume PDF** at `public/Arman_Das_Resume.pdf`
 
@@ -40,10 +40,9 @@ These are scroll‑driven R3F background effects implemented + reviewed. Keep th
 
 ## Recent changes (Jun 22)
 
-- **Background.jsx** — Rewritten as Camera Flythrough: 3D CatmullRomCurve3 path (13 points), camera rig with PerspectiveCamera moves along path driven by `scrollProgress.get()` * 0.92. TubeGeometry (radius 2.8) wireframe at 0.08 opacity forms tunnel. 4000 particles scattered around path via perpendicular offset from random `t`, glow sprite texture, AdditiveBlending. ~4000 pre‑computed edges connect nearby particles. Fog (6→30) for depth. Reveal fades in over first 33% scroll.
-- **Background.jsx** — Reveal curve changed from `Math.max(0, Math.min(1, p * 3 - 0.1)) / 0.9` to `Math.min(1, p * 7)` — full brightness at ~14% scroll (About section instead of Skills).
-- **Contact.jsx** — Integrated EmailJS (`@emailjs/browser` v4.4.1). Form sends messages via EmailJS instead of `mailto:` link. Error state added (red‑bordered form with retry message). Requires `VITE_EMAILJS_SERVICE_ID`, `VITE_EMAILJS_TEMPLATE_ID`, `VITE_EMAILJS_PUBLIC_KEY` in `.env`.
-- **`.env.example`** — Added with EmailJS variable stubs.
+- **Hero.jsx** — ASCII art name (6‑line ARMAN + 6‑line DAS in `█████╗` block letters) replaces SplitText heading. Font size `clamp(0.45rem, 1.4vw, 1.3rem)` (JetBrains Mono). ASCII art moved into left column (not full‑width) so right column stays at same y‑position. Photo frame repositioned to top‑right (`top: calc(28% - 6.5rem)`, `right: -5rem`). Laptop camera lowered (`[0, 0.3, 5.5]`). Code snippet repositioned to bottom‑right (`right-8 bottom-2`) to avoid overlapping laptop. Layout uses `self-start` on both columns for consistent top alignment.
+- **About.jsx** — "NEURAL.NETWORK.ACTIVE" label given `z-10` to render above GlobeModel canvas.
+- **Projects.jsx** — OpenCV project removed. DB Reader marked `featured: true`.
 
 ## Recent changes (Jun 21)
 

@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react'
 import { motion, useInView, useScroll, useTransform } from 'framer-motion'
 import { Canvas, useThree } from '@react-three/fiber'
-import TrueFocus from './reactbits/TrueFocus'
+import GradualBlur from './reactbits/GradualBlur'
 import GlobeModel from './GlobeModel'
 
 function TransparentBg() {
@@ -21,7 +21,8 @@ export default function About() {
       {/* Brutal section number */}
       <motion.div style={{ y: numY }} className="absolute right-8 top-12 font-display text-8xl md:text-[160px] font-black text-white/[0.03] select-none pointer-events-none leading-none">01</motion.div>
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto relative">
+        <GradualBlur position="top" height="100%" animated reveal opacity={1} strength={1.5} divCount={6} curve="ease-out" duration="0.9s" />
         <motion.div
           initial={{ opacity: 0, x: -80, scale: 0.9 }}
           animate={inView ? { opacity: 1, x: 0, scale: 1 } : {}}
@@ -32,9 +33,7 @@ export default function About() {
             <div className="w-8 h-px bg-accent" />
             <span className="font-mono text-xs text-accent/60 tracking-widest">01 — PROFILE</span>
           </div>
-          <h2 className="section-title text-4xl md:text-5xl">
-            <TrueFocus text="About Me" className="text-white" />
-          </h2>
+          <h2 className="section-title text-4xl md:text-5xl">About Me</h2>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
@@ -52,7 +51,7 @@ export default function About() {
               <GlobeModel />
             </Canvas>
             {/* Brutal label */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 font-mono text-xs text-accent/40 tracking-widest whitespace-nowrap">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 font-mono text-xs text-accent/40 tracking-widest whitespace-nowrap z-10">
               [ NEURAL.NETWORK.ACTIVE ]
             </div>
           </motion.div>
