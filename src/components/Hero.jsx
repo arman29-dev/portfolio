@@ -13,8 +13,8 @@ function TransparentBg() {
 }
 
 export default function Hero() {
-  const [mouse, setMouse] = useState({ x: 0, y: 0 })
   const [canvasReady, setCanvasReady] = useState(false)
+  const mouseRef = useRef({ x: 0, y: 0 })
 
   // Separate parallax MotionValues from the float animation
   const rawParallaxX = useMotionValue(0)
@@ -26,7 +26,7 @@ export default function Hero() {
     const handler = (e) => {
       const mx = (e.clientX / window.innerWidth - 0.5)
       const my = (e.clientY / window.innerHeight - 0.5)
-      setMouse({ x: mx, y: my })
+      mouseRef.current = { x: mx, y: my }
       rawParallaxX.set(mx * -25)
       rawParallaxY.set(my * -20)
     }
@@ -256,7 +256,7 @@ export default function Hero() {
                   <directionalLight position={[5, 5, 5]} intensity={1.4} color="#ffffff" />
                   <pointLight position={[-3, 2, 2]} color="#00f2ff" intensity={2} distance={8} />
                   <pointLight position={[3, -2, -2]} color="#003344" intensity={0.5} distance={6} />
-                  <LaptopModel mouseX={mouse.x} mouseY={mouse.y} />
+                  <LaptopModel mouseRef={mouseRef} />
                 </Canvas>
               )}
             </div>

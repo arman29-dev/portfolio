@@ -153,9 +153,7 @@ function FlythroughScene({ progress }) {
     mat.opacity = 0.9 * r
     linesRef.current.material.opacity = 0.4 * r
 
-    // Copy computed positions into the GPU buffer (already has correct data)
-    const g = pts.current.geometry
-    g.attributes.position.needsUpdate = true
+    // Positions never change, no needsUpdate required
   })
 
   return (

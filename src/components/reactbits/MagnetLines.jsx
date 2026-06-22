@@ -12,6 +12,7 @@ export default function MagnetLines({
   style = {}
 }) {
   const containerRef = useRef(null)
+  const centersRef = useRef([])
 
   useEffect(() => {
     const container = containerRef.current
@@ -19,30 +20,43 @@ export default function MagnetLines({
 
     const items = container.querySelectorAll('span')
 
-    const onPointerMove = pointer => {
-      items.forEach(item => {
+    const computeCenters = () => {
+      const centers = []
+      for (const item of items) {
         const rect = item.getBoundingClientRect()
-        const centerX = rect.x + rect.width / 2
-        const centerY = rect.y + rect.height / 2
+        centers.push({ x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 })
+      }
+      centersRef.current = centers
+    }
 
-        const b = pointer.x - centerX
-        const a = pointer.y - centerY
-        const c = Math.sqrt(a * a + b * b) || 1
-        const r = ((Math.acos(b / c) * 180) / Math.PI) * (pointer.y > centerY ? 1 : -1)
+    computeCenters()
+    const ro = new ResizeObserver(computeCenters)
+    ro.observe(container)
 
-        item.style.setProperty('--rotate', `${r}deg`)
-      })
+    const onPointerMove = pointer => {
+      const centers = centersRef.current
+      for (let i = 0; i < items.length; i++) {
+        const c = centers[i]
+        if (!c) continue
+        const b = pointer.x - c.x
+        const a = pointer.y - c.y
+        const dist = Math.sqrt(a * a + b * b) || 1
+        const r = ((Math.acos(b / dist) * 180) / Math.PI) * (pointer.y > c.y ? 1 : -1)
+        items[i].style.setProperty('--rotate', `${r}deg`)
+      }
     }
 
     window.addEventListener('pointermove', onPointerMove)
 
     if (items.length) {
-      const middleIndex = Math.floor(items.length / 2)
-      const rect = items[middleIndex].getBoundingClientRect()
+      const rect = items[Math.floor(items.length / 2)].getBoundingClientRect()
       onPointerMove({ x: rect.x, y: rect.y })
     }
 
-    return () => window.removeEventListener('pointermove', onPointerMove)
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove)
+      ro.disconnect()
+    }
   }, [rows, columns])
 
   const total = rows * columns

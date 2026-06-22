@@ -168,7 +168,7 @@ const ElectricBorder = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const octaves = 10;
+    const octaves = 5;
     const lacunarity = 1.6;
     const gain = 0.7;
     const amplitude = chaos;

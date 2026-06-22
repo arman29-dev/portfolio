@@ -38,6 +38,14 @@ These are scroll‑driven R3F background effects implemented + reviewed. Keep th
 | I | Wireframe Constellation (1000 particles + 3000 edges, scatter→sphere→torus→helix) | Built, iterating | `git` |
 | 1 | **Camera Flythrough** — CatmullRomCurve3 path, camera rig follows scroll, 4000 particles + 4000 edges in a wireframe tube tunnel, fog | **Final** | `src/components/Background.jsx` |
 
+## Recent changes (Jun 23)
+
+- **MagnetLines.jsx** — Fixed pointer rotation by merging two `useEffect` hooks into one (eliminated race between center computation and listener setup). Precomputed element centers via `ResizeObserver` on mount/resize. Removed RAF throttle (was dropping events).
+- **Hero.jsx** — Replaced `useState` mouse with `useRef` (`mouseRef`) to avoid React re-renders on every mousemove.
+- **LaptopModel.jsx** — Reads `mouseRef.current` inside `useFrame` instead of prop values.
+- **ElectricBorder.jsx** — Reduced `octaves` from 10 to 5 (halves per-frame CPU cost across 6 skill card instances).
+- **Background.jsx** — Removed `g.attributes.position.needsUpdate = true` (static particles, no need to re-upload GPU buffer every frame).
+
 ## Recent changes (Jun 22)
 
 - **Hero.jsx** — ASCII art name (6‑line ARMAN + 6‑line DAS in `█████╗` block letters) replaces SplitText heading. Font size `clamp(0.45rem, 1.4vw, 1.3rem)` (JetBrains Mono). ASCII art moved into left column (not full‑width) so right column stays at same y‑position. Photo frame repositioned to top‑right (`top: calc(28% - 6.5rem)`, `right: -5rem`). Laptop camera lowered (`[0, 0.3, 5.5]`). Code snippet repositioned to bottom‑right (`right-8 bottom-2`) to avoid overlapping laptop. Layout uses `self-start` on both columns for consistent top alignment.

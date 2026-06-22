@@ -47,7 +47,7 @@ function Screen() {
 // Laptop modeled with hinge at y=0, base going down, lid going up+back
 // Base: thickness 0.12, depth 1.6, width 2.8
 // Lid pivots from the back edge of the base (z = -0.8), opened ~105°
-export default function LaptopModel({ mouseX = 0, mouseY = 0 }) {
+export default function LaptopModel({ mouseRef = { current: { x: 0, y: 0 } } }) {
   const groupRef = useRef()
 
   const BASE_Y = -1.12
@@ -55,9 +55,11 @@ export default function LaptopModel({ mouseX = 0, mouseY = 0 }) {
   useFrame((state) => {
     if (!groupRef.current) return
     const t = state.clock.getElapsedTime()
+    const mx = mouseRef.current.x
+    const my = mouseRef.current.y
     groupRef.current.position.y = BASE_Y + Math.sin(t * 0.8) * 0.06
-    groupRef.current.rotation.y = mouseX * 0.35 + Math.sin(t * 0.3) * 0.04
-    groupRef.current.rotation.x = mouseY * -0.15
+    groupRef.current.rotation.y = mx * 0.35 + Math.sin(t * 0.3) * 0.04
+    groupRef.current.rotation.x = my * -0.15
   })
 
   // Lid open angle: ~105° from flat = -1.83 rad from base plane
